@@ -77,7 +77,11 @@ app.post('/api/', async (req, res) => {
     } catch (error) {
         // 詳細はサーバーログにのみ出力し、クライアントには汎用メッセージを返す
         console.error('API Error:', error);
-        res.status(500).json({ error: 'Failed to generate content. Please try again.' });
+        res.status(500).json({
+            error: process.env.NODE_ENV === 'production'
+                ? 'Failed to generate content. Please try again.'
+                : error.message
+        });
     }
 });
 
@@ -107,7 +111,7 @@ async function callOpenAI(prompt) {
             messages: [
                 { role: 'system', content: prompt }
             ],
-            max_completion_tokens: 2000,
+            max_completion_tokens: 10000,
             response_format: { type: "json_object" }
         })
     });
@@ -138,7 +142,7 @@ async function callGemini(prompt) {
                 parts: [{ text: prompt }]
             }],
             generationConfig: {
-                maxOutputTokens: 3000,
+                maxOutputTokens: 10000,
                 response_mime_type: "application/json"
             }
         })
